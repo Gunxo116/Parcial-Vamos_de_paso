@@ -280,5 +280,26 @@ public class Grafo {
         }
         System.out.println("=========================================");
     }
+
+    // ==========================================
+    // MÉTODOS DEL INTEGRANTE 3 (Dijkstra Flujo Máximo / Widest Path) - STUBS TEMPORALES
+    // ==========================================
+
+    /**
+     * Encuentra la ruta con mayor capacidad de flujo (carriles) entre dos ciudades.
+     * Stub temporal - Será implementado por el Integrante 3.
+     */
+    public List<String> rutaMayorFlujo(String origen, String destino) {
+        System.out.println("[INFO] Búsqueda de ruta con mayor flujo entre \"" + origen + "\" y \"" + destino + "\" aún no implementada.");
+        return null;
+    }
+
+    /**
+     * Calcula la ruta con mayor capacidad de flujo desde una ciudad origen hacia todos los demás destinos.
+     * Stub temporal - Será implementado por el Integrante 3.
+     */
+    public void rutaMayorFlujoDesdeOrigen(String origen) {
+        System.out.println("[INFO] Búsqueda de rutas con mayor flujo desde \"" + origen + "\" hacia todos los destinos aún no implementada.");
+    }
 }
 
