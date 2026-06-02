@@ -1,10 +1,10 @@
 package parcial.vamos_de_paso;
 
-import java.util.List;
 import java.util.Scanner;
 
 /**
- * Clase principal que contiene el menú interactivo para interactuar con el grafo de ciudades.
+ * Clase principal que contiene el menú interactivo para interactuar con el
+ * grafo de ciudades.
  * Implementación correspondiente al Integrante 1.
  */
 public class Main {
@@ -26,7 +26,7 @@ public class Main {
             System.out.println("3. Mostrar grafo");
             System.out.println("4. Consultar ruta más corta (Dijkstra)");
             System.out.println("5. Consultar ruta con mayor flujo (Widest Path)");
-            System.out.println("6. Consultar rutas más cortas desde origen");
+            System.out.println("6. Consultar rutas desde origen (distancia y flujo)");
             System.out.println("7. Salir");
             System.out.println("=============================================");
             System.out.print("Seleccione una opción: ");
@@ -151,7 +151,8 @@ public class Main {
     }
 
     /**
-     * Menú para buscar y mostrar la ruta con mayor capacidad de flujo (carriles) entre dos ciudades.
+     * Menú para buscar y mostrar la ruta con mayor capacidad de flujo (carriles)
+     * entre dos ciudades.
      */
     private static void consultarRutaMayorFlujoMenu(Grafo grafo, Scanner scanner) {
         System.out.println("\n--- CONSULTAR RUTA CON MAYOR FLUJO ---");
@@ -169,10 +170,11 @@ public class Main {
     }
 
     /**
-     * Menú para calcular las rutas más cortas desde una ciudad origen a todas las demás del grafo.
+     * Menú para calcular las rutas más cortas y con mayor capacidad de flujo
+     * desde una ciudad origen a todas las demás del grafo.
      */
     private static void consultarDesdeCiudadHaciaTodas(Grafo grafo, Scanner scanner) {
-        System.out.println("\n--- CONSULTAR RUTAS MÁS CORTAS HACIA TODOS LOS DESTINOS ---");
+        System.out.println("\n--- CONSULTAR RUTAS DESDE ORIGEN (HACIA TODOS LOS DESTINOS) ---");
         System.out.print("Ingrese la ciudad origen: ");
         String origen = scanner.nextLine().trim();
 
@@ -181,7 +183,11 @@ public class Main {
             return;
         }
 
+        // 1. Mostrar rutas más cortas (distancias mínimas)
         grafo.rutaMasCortaDesdeOrigen(origen);
+        System.out.println();
+        // 2. Mostrar rutas con mayor flujo (capacidades máximas)
+        grafo.rutaMayorFlujoDesdeOrigen(origen);
     }
 
     /**

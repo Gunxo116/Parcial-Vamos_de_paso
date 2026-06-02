@@ -56,8 +56,8 @@ public class Grafo {
         Ciudad ciudadDestino = ciudades.get(destino);
 
         // Como el grafo es no dirigido, agregamos el tramo en ambos sentidos
-        adyacencias.get(ciudadOrigen).add(new Tramo(ciudadDestino, distancia, carriles));
-        adyacencias.get(ciudadDestino).add(new Tramo(ciudadOrigen, distancia, carriles));
+        adyacencias.get(ciudadOrigen).add(new Tramo(ciudadOrigen, ciudadDestino, distancia, carriles));
+        adyacencias.get(ciudadDestino).add(new Tramo(ciudadDestino, ciudadOrigen, distancia, carriles));
     }
 
     /**
@@ -282,24 +282,196 @@ public class Grafo {
     }
 
     // ==========================================
-    // MÉTODOS DEL INTEGRANTE 3 (Dijkstra Flujo Máximo / Widest Path) - STUBS TEMPORALES
+    // MÉTODOS DEL INTEGRANTE 3 (Dijkstra Flujo Máximo / Widest Path)
     // ==========================================
 
     /**
-     * Encuentra la ruta con mayor capacidad de flujo (carriles) entre dos ciudades.
-     * Stub temporal - Será implementado por el Integrante 3.
+     * Clase auxiliar que sirve para ordenar los nodos en la Cola de Prioridad (PriorityQueue)
+     * basándose en la capacidad de cuello de botella máxima del camino.
+     */
+    private static class NodoFlujo implements Comparable<NodoFlujo> {
+        Ciudad ciudad;
+        double capacidadCamino;
+
+        public NodoFlujo(Ciudad ciudad, double capacidadCamino) {
+            this.ciudad = ciudad;
+            this.capacidadCamino = capacidadCamino;
+        }
+
+        @Override
+        public int compareTo(NodoFlujo otro) {
+            // Cola de prioridad de máximo (el de mayor capacidad primero)
+            return Double.compare(otro.capacidadCamino, this.capacidadCamino);
+        }
+    }
+
+    /**
+     * Encuentra la ruta con mayor capacidad de flujo (carriles) entre dos ciudades
+     * resolviendo el Widest Path Problem (Maximum Bottleneck Path).
+     * @param origen Nombre de la ciudad de partida.
+     * @param destino Nombre de la ciudad de llegada.
+     * @return Lista con los nombres de las ciudades del camino, o null si no hay camino.
      */
     public List<String> rutaMayorFlujo(String origen, String destino) {
-        System.out.println("[INFO] Búsqueda de ruta con mayor flujo entre \"" + origen + "\" y \"" + destino + "\" aún no implementada.");
-        return null;
+        if (!ciudades.containsKey(origen) || !ciudades.containsKey(destino)) {
+            System.out.println("Error: Una o ambas ciudades no existen en el grafo.");
+            return null;
+        }
+
+        if (origen.equals(destino)) {
+            System.out.println("Ruta con mayor flujo desde " + origen + " hasta " + destino + ":");
+            System.out.println("Camino: " + origen);
+            System.out.println("Capacidad máxima de flujo: Sin límite (origen y destino son iguales)");
+            List<String> camino = new ArrayList<>();
+            camino.add(origen);
+            return camino;
+        }
+
+        Ciudad ciudadOrigen = ciudades.get(origen);
+        Ciudad ciudadDestino = ciudades.get(destino);
+
+        // Mapa para guardar la capacidad de flujo máxima (cuello de botella) a cada ciudad
+        Map<Ciudad, Double> capacidades = new HashMap<>();
+        // Mapa para guardar el "padre" de cada ciudad en el camino
+        Map<Ciudad, Ciudad> padres = new HashMap<>();
+        // Cola de prioridad de máximo para procesar el nodo con mayor capacidad primero
+        PriorityQueue<NodoFlujo> colaPrioridad = new PriorityQueue<>();
+
+        // Inicializamos todas las capacidades conocidas como 0.0 (mínimo posible)
+        for (Ciudad c : adyacencias.keySet()) {
+            capacidades.put(c, 0.0);
+        }
+
+        // La capacidad al origen es infinito
+        capacidades.put(ciudadOrigen, Double.MAX_VALUE);
+        colaPrioridad.add(new NodoFlujo(ciudadOrigen, Double.MAX_VALUE));
+
+        while (!colaPrioridad.isEmpty()) {
+            NodoFlujo actual = colaPrioridad.poll();
+            Ciudad u = actual.ciudad;
+
+            // Si ya encontramos un camino con mayor cuello de botella para u, ignoramos
+            if (actual.capacidadCamino < capacidades.get(u)) {
+                continue;
+            }
+
+            // Si ya llegamos al destino, terminamos (optimización)
+            if (u.equals(ciudadDestino)) {
+                break;
+            }
+
+            List<Tramo> tramosVecinos = adyacencias.get(u);
+            if (tramosVecinos != null) {
+                for (Tramo tramo : tramosVecinos) {
+                    Ciudad v = tramo.getDestino();
+                    
+                    // La capacidad al vecino v por este camino es el mínimo entre la capacidad 
+                    // acumulada hasta u y la capacidad del tramo (carriles)
+                    double capacidadTentativa = Math.min(capacidades.get(u), tramo.getCarriles());
+
+                    // Si encontramos un camino que mejora el cuello de botella hacia v, actualizamos
+                    if (capacidadTentativa > capacidades.get(v)) {
+                        capacidades.put(v, capacidadTentativa);
+                        padres.put(v, u);
+                        colaPrioridad.add(new NodoFlujo(v, capacidadTentativa));
+                    }
+                }
+            }
+        }
+
+        // Si la capacidad sigue siendo 0.0, significa que no hay camino
+        if (capacidades.get(ciudadDestino) == 0.0) {
+            System.out.println("No se encontró ninguna ruta entre " + origen + " y " + destino);
+            return null;
+        }
+
+        // Reconstruimos el camino
+        List<String> camino = new ArrayList<>();
+        Ciudad aux = ciudadDestino;
+        while (aux != null) {
+            camino.add(0, aux.getNombre());
+            aux = padres.get(aux);
+        }
+
+        System.out.println("Ruta con mayor capacidad de flujo desde " + origen + " hasta " + destino + ":");
+        System.out.println("Camino: " + String.join(" -> ", camino));
+        System.out.println("Capacidad máxima de flujo (cuello de botella): " + (int) (double) capacidades.get(ciudadDestino) + " carriles");
+
+        return camino;
     }
 
     /**
      * Calcula la ruta con mayor capacidad de flujo desde una ciudad origen hacia todos los demás destinos.
-     * Stub temporal - Será implementado por el Integrante 3.
+     * Imprime los caminos y cuellos de botella correspondientes en consola.
+     * @param origen Nombre de la ciudad de partida.
      */
     public void rutaMayorFlujoDesdeOrigen(String origen) {
-        System.out.println("[INFO] Búsqueda de rutas con mayor flujo desde \"" + origen + "\" hacia todos los destinos aún no implementada.");
+        if (!ciudades.containsKey(origen)) {
+            System.out.println("Error: La ciudad origen \"" + origen + "\" no existe en el grafo.");
+            return;
+        }
+
+        Ciudad ciudadOrigen = ciudades.get(origen);
+
+        Map<Ciudad, Double> capacidades = new HashMap<>();
+        Map<Ciudad, Ciudad> padres = new HashMap<>();
+        PriorityQueue<NodoFlujo> colaPrioridad = new PriorityQueue<>();
+
+        // Inicializamos todas las capacidades a 0.0
+        for (Ciudad c : adyacencias.keySet()) {
+            capacidades.put(c, 0.0);
+        }
+
+        // La capacidad al origen es infinito
+        capacidades.put(ciudadOrigen, Double.MAX_VALUE);
+        colaPrioridad.add(new NodoFlujo(ciudadOrigen, Double.MAX_VALUE));
+
+        while (!colaPrioridad.isEmpty()) {
+            NodoFlujo actual = colaPrioridad.poll();
+            Ciudad u = actual.ciudad;
+
+            if (actual.capacidadCamino < capacidades.get(u)) {
+                continue;
+            }
+
+            List<Tramo> tramosVecinos = adyacencias.get(u);
+            if (tramosVecinos != null) {
+                for (Tramo tramo : tramosVecinos) {
+                    Ciudad v = tramo.getDestino();
+                    double capacidadTentativa = Math.min(capacidades.get(u), tramo.getCarriles());
+
+                    if (capacidadTentativa > capacidades.get(v)) {
+                        capacidades.put(v, capacidadTentativa);
+                        padres.put(v, u);
+                        colaPrioridad.add(new NodoFlujo(v, capacidadTentativa));
+                    }
+                }
+            }
+        }
+
+        // Imprimimos los resultados para todas las ciudades
+        System.out.println("=== RUTAS CON MAYOR CAPACIDAD DE FLUJO DESDE: " + origen + " ===");
+        for (Ciudad destino : adyacencias.keySet()) {
+            if (destino.equals(ciudadOrigen)) {
+                continue;
+            }
+
+            double cap = capacidades.get(destino);
+            if (cap == 0.0) {
+                System.out.println("A " + destino.getNombre() + ": Inalcanzable");
+            } else {
+                List<String> camino = new ArrayList<>();
+                Ciudad aux = destino;
+                while (aux != null) {
+                    camino.add(0, aux.getNombre());
+                    aux = padres.get(aux);
+                }
+                System.out.println("A " + destino.getNombre() + ":");
+                System.out.println("  Camino: " + String.join(" -> ", camino));
+                System.out.println("  Capacidad máxima (cuello de botella): " + (int) cap + " carriles");
+            }
+        }
+        System.out.println("=========================================================");
     }
 }
 
