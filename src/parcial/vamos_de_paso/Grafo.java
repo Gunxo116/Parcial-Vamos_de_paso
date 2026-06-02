@@ -201,5 +201,84 @@ public class Grafo {
 
         return camino;
     }
+
+    /**
+     * Calcula la ruta más corta desde una ciudad origen hacia todos los demás destinos.
+     * Imprime las distancias y caminos correspondientes en consola.
+     * @param origen Nombre de la ciudad de partida.
+     */
+    public void rutaMasCortaDesdeOrigen(String origen) {
+        if (!ciudades.containsKey(origen)) {
+            System.out.println("Error: La ciudad origen \"" + origen + "\" no existe en el grafo.");
+            return;
+        }
+
+        Ciudad ciudadOrigen = ciudades.get(origen);
+
+        // Mapas para almacenar la distancia mínima y el camino (padre de cada nodo)
+        Map<Ciudad, Double> distancias = new HashMap<>();
+        Map<Ciudad, Ciudad> padres = new HashMap<>();
+        PriorityQueue<NodoDijkstra> colaPrioridad = new PriorityQueue<>();
+
+        // Inicializamos todas las distancias conocidas como "infinito" (Double.MAX_VALUE)
+        for (Ciudad c : adyacencias.keySet()) {
+            distancias.put(c, Double.MAX_VALUE);
+        }
+
+        // La distancia desde el origen a sí mismo es 0
+        distancias.put(ciudadOrigen, 0.0);
+        colaPrioridad.add(new NodoDijkstra(ciudadOrigen, 0.0));
+
+        // Bucle de Dijkstra
+        while (!colaPrioridad.isEmpty()) {
+            NodoDijkstra actual = colaPrioridad.poll();
+            Ciudad u = actual.ciudad;
+
+            // Si ya hay un camino más corto, ignoramos
+            if (actual.distanciaAcumulada > distancias.get(u)) {
+                continue;
+            }
+
+            // Revisamos los vecinos de u
+            List<Tramo> tramosVecinos = adyacencias.get(u);
+            if (tramosVecinos != null) {
+                for (Tramo tramo : tramosVecinos) {
+                    Ciudad v = tramo.getDestino();
+                    double nuevaDistancia = distancias.get(u) + tramo.getDistancia();
+
+                    if (nuevaDistancia < distancias.get(v)) {
+                        distancias.put(v, nuevaDistancia);
+                        padres.put(v, u);
+                        colaPrioridad.add(new NodoDijkstra(v, nuevaDistancia));
+                    }
+                }
+            }
+        }
+
+        // Imprimimos los resultados para todas las ciudades
+        System.out.println("=== RUTAS MÁS CORTAS DESDE: " + origen + " ===");
+        for (Ciudad destino : adyacencias.keySet()) {
+            if (destino.equals(ciudadOrigen)) {
+                continue; // Omitimos mostrar el origen hacia sí mismo
+            }
+
+            double dist = distancias.get(destino);
+            if (dist == Double.MAX_VALUE) {
+                System.out.println("A " + destino.getNombre() + ": Inalcanzable");
+            } else {
+                // Reconstruimos el camino hacia atrás para el destino actual
+                List<String> camino = new ArrayList<>();
+                Ciudad aux = destino;
+                while (aux != null) {
+                    camino.add(0, aux.getNombre());
+                    aux = padres.get(aux);
+                }
+                System.out.println("A " + destino.getNombre() + ":");
+                System.out.println("  Camino: " + String.join(" -> ", camino));
+                System.out.println("  Distancia total: " + dist + " km");
+            }
+        }
+        System.out.println("=========================================");
+    }
 }
 
