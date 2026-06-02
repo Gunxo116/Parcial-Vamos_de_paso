@@ -89,4 +89,117 @@ public class Grafo {
     public Map<Ciudad, List<Tramo>> getAdyacencias() {
         return adyacencias;
     }
+
+    // ==========================================
+    // MÉTODOS DEL INTEGRANTE 2 (Dijkstra)
+    // ==========================================
+
+    /**
+     * Clase auxiliar que sirve para ordenar los nodos en la Cola de Prioridad (PriorityQueue)
+     * basándose en la distancia acumulada hasta el momento.
+     */
+    private static class NodoDijkstra implements Comparable<NodoDijkstra> {
+        Ciudad ciudad;
+        double distanciaAcumulada;
+
+        public NodoDijkstra(Ciudad ciudad, double distanciaAcumulada) {
+            this.ciudad = ciudad;
+            this.distanciaAcumulada = distanciaAcumulada;
+        }
+
+        @Override
+        public int compareTo(NodoDijkstra otro) {
+            // Comparamos las distancias acumuladas para que el menor vaya primero
+            return Double.compare(this.distanciaAcumulada, otro.distanciaAcumulada);
+        }
+    }
+
+    /**
+     * Encuentra la ruta más corta entre dos ciudades usando el algoritmo de Dijkstra clásico.
+     * Suma los kilómetros de los tramos.
+     * @param origen Nombre de la ciudad de partida.
+     * @param destino Nombre de la ciudad de llegada.
+     * @return Lista con los nombres de las ciudades del camino, o null si no hay camino.
+     */
+    public List<String> rutaMasCorta(String origen, String destino) {
+        // Validamos que ambas ciudades existan en nuestro grafo
+        if (!ciudades.containsKey(origen) || !ciudades.containsKey(destino)) {
+            System.out.println("Error: Una o ambas ciudades no existen en el grafo.");
+            return null;
+        }
+
+        Ciudad ciudadOrigen = ciudades.get(origen);
+        Ciudad ciudadDestino = ciudades.get(destino);
+
+        // Mapa para guardar la distancia más corta conocida desde el origen a cada ciudad
+        Map<Ciudad, Double> distancias = new HashMap<>();
+        // Mapa para guardar el "padre" de cada ciudad en el camino más corto (para reconstruir la ruta)
+        Map<Ciudad, Ciudad> padres = new HashMap<>();
+        // Cola de prioridad para procesar siempre el nodo con menor distancia acumulada
+        PriorityQueue<NodoDijkstra> colaPrioridad = new PriorityQueue<>();
+
+        // Inicializamos todas las distancias conocidas como "infinito" (Double.MAX_VALUE)
+        for (Ciudad c : adyacencias.keySet()) {
+            distancias.put(c, Double.MAX_VALUE);
+        }
+
+        // La distancia desde el origen a sí mismo es 0
+        distancias.put(ciudadOrigen, 0.0);
+        colaPrioridad.add(new NodoDijkstra(ciudadOrigen, 0.0));
+
+        // Bucle principal de Dijkstra
+        while (!colaPrioridad.isEmpty()) {
+            NodoDijkstra actual = colaPrioridad.poll();
+            Ciudad u = actual.ciudad;
+
+            // Si ya encontramos un camino más corto a esta ciudad, ignoramos este registro viejo
+            if (actual.distanciaAcumulada > distancias.get(u)) {
+                continue;
+            }
+
+            // Si ya llegamos al destino, terminamos el algoritmo antes (optimización)
+            if (u.equals(ciudadDestino)) {
+                break;
+            }
+
+            // Revisamos todas las conexiones (tramos) que salen de la ciudad actual
+            List<Tramo> tramosVecinos = adyacencias.get(u);
+            if (tramosVecinos != null) {
+                for (Tramo tramo : tramosVecinos) {
+                    Ciudad v = tramo.getDestino();
+                    // Distancia acumulada si viajamos de 'u' a 'v'
+                    double nuevaDistancia = distancias.get(u) + tramo.getDistancia();
+
+                    // Si encontramos un camino más corto hacia 'v', actualizamos
+                    if (nuevaDistancia < distancias.get(v)) {
+                        distancias.put(v, nuevaDistancia);
+                        padres.put(v, u); // Guardamos que a 'v' se llega mejor por 'u'
+                        colaPrioridad.add(new NodoDijkstra(v, nuevaDistancia));
+                    }
+                }
+            }
+        }
+
+        // Si la distancia al destino sigue siendo infinito, significa que no hay conexión
+        if (distancias.get(ciudadDestino) == Double.MAX_VALUE) {
+            System.out.println("No se encontró ninguna ruta entre " + origen + " y " + destino);
+            return null;
+        }
+
+        // Reconstruimos el camino desde el destino hacia atrás usando el mapa de padres
+        List<String> camino = new ArrayList<>();
+        Ciudad aux = ciudadDestino;
+        while (aux != null) {
+            camino.add(0, aux.getNombre()); // Lo insertamos al inicio para que quede en orden
+            aux = padres.get(aux);
+        }
+
+        // Imprimimos el resultado de forma clara por pantalla
+        System.out.println("Ruta más corta desde " + origen + " hasta " + destino + ":");
+        System.out.println("Camino: " + String.join(" -> ", camino));
+        System.out.println("Distancia total: " + distancias.get(ciudadDestino) + " km");
+
+        return camino;
+    }
 }
+
