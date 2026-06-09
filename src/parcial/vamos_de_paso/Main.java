@@ -2,18 +2,12 @@ package parcial.vamos_de_paso;
 
 import java.util.Scanner;
 
-/**
- * Clase principal que contiene el menú interactivo para interactuar con el
- * grafo de ciudades.
- * Implementación correspondiente al Integrante 1.
- */
 public class Main {
 
     public static void main(String[] args) {
         Grafo grafo = new Grafo();
         Scanner scanner = new Scanner(System.in);
 
-        // Carga de datos de prueba predefinidos para facilitar la demostración
         cargarDatosDePrueba(grafo);
 
         boolean continuar = true;
@@ -62,9 +56,6 @@ public class Main {
         scanner.close();
     }
 
-    /**
-     * Carga ciudades y conexiones viales reales en el grafo de prueba.
-     */
     private static void cargarDatosDePrueba(Grafo grafo) {
         System.out.println("Cargando ciudades y tramos de prueba (Red Vial Argentina)...");
         grafo.agregarTramo("Buenos Aires", "Rosario", 300.0, 4);
@@ -78,9 +69,6 @@ public class Main {
         System.out.println("Datos cargados con éxito.");
     }
 
-    /**
-     * Menú para agregar una ciudad al grafo.
-     */
     private static void agregarCiudadMenu(Grafo grafo, Scanner scanner) {
         System.out.println("\n--- AGREGAR CIUDAD ---");
         System.out.print("Ingrese el nombre de la ciudad: ");
@@ -97,9 +85,6 @@ public class Main {
         }
     }
 
-    /**
-     * Menú para agregar una conexión (tramo) entre dos ciudades.
-     */
     private static void agregarConexionMenu(Grafo grafo, Scanner scanner) {
         System.out.println("\n--- AGREGAR CONEXIÓN ---");
         System.out.print("Ingrese ciudad origen: ");
@@ -132,9 +117,6 @@ public class Main {
         System.out.println("Conexión entre \"" + origen + "\" y \"" + destino + "\" agregada con éxito.");
     }
 
-    /**
-     * Menú para buscar y mostrar la ruta más corta entre dos ciudades.
-     */
     private static void consultarRutaMasCortaMenu(Grafo grafo, Scanner scanner) {
         System.out.println("\n--- CONSULTAR RUTA MÁS CORTA ---");
         System.out.print("Ingrese ciudad de origen: ");
@@ -150,10 +132,6 @@ public class Main {
         grafo.rutaMasCorta(origen, destino);
     }
 
-    /**
-     * Menú para buscar y mostrar la ruta con mayor capacidad de flujo (carriles)
-     * entre dos ciudades.
-     */
     private static void consultarRutaMayorFlujoMenu(Grafo grafo, Scanner scanner) {
         System.out.println("\n--- CONSULTAR RUTA CON MAYOR FLUJO ---");
         System.out.print("Ingrese ciudad de origen: ");
@@ -169,10 +147,6 @@ public class Main {
         grafo.rutaMayorFlujo(origen, destino);
     }
 
-    /**
-     * Menú para calcular las rutas más cortas y con mayor capacidad de flujo
-     * desde una ciudad origen a todas las demás del grafo.
-     */
     private static void consultarDesdeCiudadHaciaTodas(Grafo grafo, Scanner scanner) {
         System.out.println("\n--- CONSULTAR RUTAS DESDE ORIGEN (HACIA TODOS LOS DESTINOS) ---");
         System.out.print("Ingrese la ciudad origen: ");
@@ -183,16 +157,11 @@ public class Main {
             return;
         }
 
-        // 1. Mostrar rutas más cortas (distancias mínimas)
         grafo.rutaMasCortaDesdeOrigen(origen);
         System.out.println();
-        // 2. Mostrar rutas con mayor flujo (capacidades máximas)
         grafo.rutaMayorFlujoDesdeOrigen(origen);
     }
 
-    /**
-     * Lee un decimal de la consola de forma robusta.
-     */
     private static double leerDouble(Scanner scanner, String mensaje) {
         while (true) {
             System.out.print(mensaje);
@@ -205,9 +174,6 @@ public class Main {
         }
     }
 
-    /**
-     * Lee un entero de la consola de forma robusta.
-     */
     private static int leerEntero(Scanner scanner, String mensaje) {
         while (true) {
             System.out.print(mensaje);
